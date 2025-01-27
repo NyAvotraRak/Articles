@@ -20,7 +20,7 @@ class UserController extends Controller
     public function register(RegisterUserRequest $request)
     {
         try {
-            // Générer un code de validation aléatoire
+            // Générer un code de validation aléatoiree
             $code_validation = Str::random(6); // Code de 6 caractères
             // dd($validationCode);
 
