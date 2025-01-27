@@ -117,15 +117,40 @@ class ProduitController extends Controller
     {
         // dd($request);
         try {
+            // Récupérer toutes les catégories sans filtrage et sans tri
+            $query = Categorie::query();
+
+            // Appliquer le filtre sur le nom du produit si fourni
+            if ($nom_categorie = $request->validated('categorie_nom')) {
+                $query = $query->where('nom_categorie', $nom_categorie);
+            }
+
+            $categorie = $query->first();
+
+            if(!$categorie){
+                // Sauvegarder la categorie dans la base de données
+                $categorie = Categorie::create([
+                    'nom_categorie' => $request->validated('categorie_nom')
+                ]);
+            }
+
+            $data = $this->extract_data(new Produit(), $request);
+            // dd($categorie->id);
             // Tenter de créer la catégorie
-            $produit = Produit::create($this->extract_data(new Produit(), $request));
+            $produit = Produit::create([
+                'nom_produit' => $data['nom_produit'],
+                'description_produit' => $data['description_produit'],
+                'image_produit' => $data['image_produit'],
+                'prix' => $data['prix'],
+                'categorie_id' => $categorie->id
+            ]);
             // dd($produit);
     
             // Retourner une réponse 201 en cas de succès
             return response()->json([
                 'success' => true,
                 'message' => 'Le produit a bien été créé',
-                // 'categorie' => $categorie,
+                'produit' => $produit,
                 'redirect_url' => route('admin.produit.index'),
             ], 201, [], JSON_UNESCAPED_SLASHES);
         } catch (\Exception $e) {
@@ -175,15 +200,6 @@ class ProduitController extends Controller
             $produit = Produit::findOrFail($id);
             // dd($produit);
             $data = $this->extract_data($produit, $request);
-            // Vérifier si un nouveau fichier d'image a été téléchargé
-            /*if ($request->hasFile('image_produit')) {
-                // Supprimer l'ancienne image si elle existe
-                if ($produit->image_produit) {
-                    Storage::disk('public')->delete($produit->image_produit);
-                }
-                // Enregistrer le nouveau fichier d'image et mettre à jour le chemin dans les données
-                $data['image_ministere'] = $request->file('image_produit')->store('image', 'public');
-            }*/
 
             // Mettre à jour le produit avec les données validées
             $produit->update($data);

@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CategorieRequest;
 use App\Http\Requests\Admin\SearchCategorieRequest;
 use App\Models\Categorie;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class CategorieController extends Controller
 {
@@ -15,6 +17,16 @@ class CategorieController extends Controller
      */
     public function index(SearchCategorieRequest $request)
     {
+        // $mdp = 1234567;
+        // // Sauvegarder l'utilisateur dans la base de données
+        // $user = User::create([
+        //     'nom_utilisateur' => 'azer',
+        //     'prenom_utilisateur' => 'sdf',
+        //     'email' => 'k@gmail.com',
+        //     'mot_de_passe' => Hash::make($mdp),
+        //     'validation_code' => '1234',
+        //     'est_verifie' => true
+        // ]);
         // dd($request->validated('nom_categorie'));
         try {
 

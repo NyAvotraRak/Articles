@@ -23,12 +23,13 @@ class ProduitRequest extends FormRequest
      */
     public function rules(): array
     {
+        // dd('tonga');
         return [
             'image_produit' => ['required', 'image', 'unique:produits,image_produit,' . $this->route('produit')],
             'nom_produit' => ['required', 'string', 'min:2', 'unique:produits,nom_produit,' . $this->route('produit')],
             'description_produit' => ['required', 'string', 'unique:produits,description_produit,' . $this->route('produit')],
             'prix' => ['required', 'integer', 'min:0'],
-            'categorie_id' => ['required', 'exists:categories,id'],
+            'categorie_nom' => ['required', 'string' ],
         ];
     }
     
@@ -49,11 +50,11 @@ class ProduitRequest extends FormRequest
             'image_produit.required' => 'L\'image est obligatoire.',
             'image_produit.image' => 'ça doit être une image',
             'nom_produit.required' => 'Le nom du produit est obligatoire.',
-            'nom_produit.unique' => 'Cet nom produit existe déjà.',
+            'nom_produit.unique' => 'Ce nom produit existe déjà.',
             'description_produit.unique' => 'Cette description produit existe déjà.',
             'description_produit.required' => 'La description est obligatoire.',
             'prix.required' => 'Le prix est obligatoire.',
-            'categorie_id.required' => 'Une catégorie doit être sélectionnée.',
+            'categorie_nom.required' => 'Une catégorie doit être sélectionnée.',
             'categorie_id.exists' => 'La catégorie sélectionnée est invalide.',
         ];
     }

@@ -65,11 +65,11 @@ class UserController extends Controller
             }
 
             // Vérification si le compte est vérifié
-            if (!$user->est_verifie) {
+            /*if (!$user->est_verifie) {
                 return response()->json([
                     'message' => 'Votre compte n\'a pas encore été vérifié.',
                 ], 403); // Code HTTP 403 : Accès interdit
-            }
+            }*/
     
             // Création d'un token d'accès
             $token = $user->createToken('auth_token')->plainTextToken;
