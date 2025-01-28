@@ -17,6 +17,13 @@ class CategorieController extends Controller
      */
     public function index(SearchCategorieRequest $request)
     {
+
+       /* // Vérifier si un utilisateur est authentifié
+        if (auth()->check()) {
+            dd('Utilisateur est connecté');
+        } else {
+            dd('Utilisateur n\'est pas connecté');
+        }*/
         /*$mdp = 1234567;
         // Sauvegarder l'utilisateur dans la base de données
         $user = User::create([

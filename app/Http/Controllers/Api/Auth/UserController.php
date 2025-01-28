@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginUserRequest;
 use App\Http\Requests\Auth\RegisterUserRequest;
+use App\Http\Requests\Auth\UpdateUserRequest;
 use App\Mail\ContactUserMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,9 +18,46 @@ use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
+
+    public function index()
+    {
+        try {
+
+            // Construire la requête de base pour récupérer les utilisateurs
+            $users = User::select('id', 'nom_utilisateur', 'prenom_utilisateur', 'email')
+                            ->get();
+
+            // Retourner les données sous forme de JSON avec code 200
+            return response()->json([
+                'success' => true,
+                'users' => $users,
+            ], 200);
+    
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner une erreur 400 avec le message d'exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la récupération des utilisateurs.',
+                'error' => $e->getMessage(), // Optionnel, pour plus de détails
+            ], 400);
+        }
+
+    }
+
     public function register(RegisterUserRequest $request)
     {
         try {
+
+            // Vérifier si un compte existe déjà dans la base de données
+            $compte_existant = User::exists();
+            // dd($compte_existant);
+
+            if ($compte_existant) {
+                return response()->json([
+                    'message' => 'Un compte existe déjà dans le système. Il est impossible de créer un autre compte.',
+                ], 403); // 403 Forbidden
+            }
+
             // Générer un code de validation aléatoiree
             $code_validation = Str::random(6); // Code de 6 caractères
             // dd($validationCode);
@@ -50,6 +88,72 @@ class UserController extends Controller
             ], 500);
         }
     }
+    
+    public function update(UpdateUserRequest $request, $id)
+    {
+        try {
+            // Récupérer l'utilisateur à mettre à jour
+            $user = User::findOrFail($id);
+
+            // Générer un code de validation aléatoiree
+            $code_validation = Str::random(6); // Code de 6 caractères
+    
+            // Récupérer les données validées
+            $data = $request->validated();
+    
+            // Si le mot de passe est fourni, le hacher
+            if (!empty($data['mot_de_passe'])) {
+                $data['mot_de_passe'] = Hash::make($data['mot_de_passe']);
+            } else {
+                // Supprimer la clé 'mot_de_passe' pour éviter une mise à jour à null
+                unset($data['mot_de_passe']);
+            }
+    
+            // Stocker les données dans le cache avant de les valider
+            $cle_cache = 'modification_utilisateur_' . $data['email'];
+            // dd($cle_cache);
+            Cache::put($cle_cache, [
+                'id' => $user->id,
+                'nom_utilisateur' => $data['nom_utilisateur'],
+                'prenom_utilisateur' => $data['prenom_utilisateur'],
+                'email' => $data['email'],
+                'mot_de_passe' => isset($data['mot_de_passe']) ? Hash::make($data['mot_de_passe']) : $user->mot_de_passe,
+                'validation_code' => $code_validation,
+            ], now()->addMinutes(10)); // Expire après 10 minutes
+            
+            // Envoyer l'email avec le code de validation
+            Mail::to($data['email'])->send(new ContactUserMail($code_validation));
+
+            // Retourner une réponse JSON pour informer l'utilisateur de vérifier son email
+            return response()->json([
+                'message' => 'Un email de validation a été envoyé. Veuillez vérifier votre boîte de réception.',
+            ], 200);
+
+            // Mettre à jour l'utilisateur avec les données restantes
+            // $user->update($data);
+    
+            // Retourner une réponse en cas de succès
+            return response()->json([
+                'success' => true,
+                'message' => 'L\'utilisateur a bien été mis à jour.',
+                'redirect_url' => route('admin.utilisateur.index'),
+            ], 200, [], JSON_UNESCAPED_SLASHES);
+    
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            // Gérer le cas où l'utilisateur n'est pas trouvé
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur : Utilisateur non trouvé.',
+            ], 404);
+        } catch (\Exception $e) {
+            // Gérer toute autre erreur
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour de l\'utilisateur.',
+                'error' => $e->getMessage(), // Optionnel pour plus de détails
+            ], 400);
+        }
+    }    
 
     public function login(LoginUserRequest $request)
     {
@@ -63,13 +167,6 @@ class UserController extends Controller
                     'email' => ['Les identifiants fournis sont incorrects.'],
                 ]);
             }
-
-            // Vérification si le compte est vérifié
-            /*if (!$user->est_verifie) {
-                return response()->json([
-                    'message' => 'Votre compte n\'a pas encore été vérifié.',
-                ], 403); // Code HTTP 403 : Accès interdit
-            }*/
     
             // Création d'un token d'accès
             $token = $user->createToken('auth_token')->plainTextToken;
@@ -107,59 +204,79 @@ class UserController extends Controller
         }
     }
 
-    public function validateCode(Request $request)
-    {
-        try {
-            $request->validate([
-                'email' => 'required|email',
-                'validation_code' => 'required|string',
-            ]);
+        public function validateCode(Request $request)
+        {
+            try {
+                $request->validate([
+                    'email' => 'required|email',
+                    'validation_code' => 'required|string',
+                ]);
         
-            // Récupérer les données utilisateur dans le cache
-            $cle_cache = 'inscription_utilisateur_' . $request->email;
-            $donnees_utilisateur  = Cache::get($cle_cache);
+                // Vérification pour inscription
+                $cle_cache_inscription = 'inscription_utilisateur_' . $request->email;
+                $donnees_inscription = Cache::get($cle_cache_inscription);
         
-            if (!$donnees_utilisateur) {
+                if ($donnees_inscription && $donnees_inscription['validation_code'] === $request->validation_code) {
+                    // Création d'un nouvel utilisateur
+                    $user = User::create([
+                        'nom_utilisateur' => $donnees_inscription['nom_utilisateur'],
+                        'prenom_utilisateur' => $donnees_inscription['prenom_utilisateur'],
+                        'email' => $donnees_inscription['email'],
+                        'mot_de_passe' => $donnees_inscription['mot_de_passe'],
+                        'est_verifie' => true,
+                    ]);
+        
+                    // Supprimer le cache
+                    Cache::forget($cle_cache_inscription);
+        
+                    return response()->json([
+                        'message' => 'Compte créé avec succès.',
+                        'user' => $user,
+                    ], 201);
+                }
+        
+                // Vérification pour modification
+                $cle_cache_modification = 'modification_utilisateur_' . $request->email;
+                $donnees_modification = Cache::get($cle_cache_modification);
+        
+                if ($donnees_modification && $donnees_modification['validation_code'] === $request->validation_code) {
+                    // Mise à jour de l'utilisateur existant
+                    $user = User::findOrFail($donnees_modification['id']);
+                    // dd($user);
+                    $user->update([
+                        'nom_utilisateur' => $donnees_modification['nom_utilisateur'],
+                        'prenom_utilisateur' => $donnees_modification['prenom_utilisateur'],
+                        'email' => $donnees_modification['email'],
+                        'mot_de_passe' => $donnees_modification['mot_de_passe'],
+                        'est_verifie' => true,
+                    ]);
+        
+                    // Supprimer le cache
+                    Cache::forget($cle_cache_modification);
+        
+                    return response()->json([
+                        'message' => 'Compte mis à jour avec succès.',
+                        'user' => $user,
+                    ], 200);
+                }
+        
+                // Si aucune clé valide n'est trouvée
                 return response()->json([
-                    'message' => 'Aucune demande d\'inscription trouvée ou le code a expiré.',
+                    'message' => 'Aucune demande trouvée ou code de validation incorrect.',
                 ], 400);
-            }
         
-            // Vérifier si le code est correct
-            if ($donnees_utilisateur['validation_code'] !== $request->validation_code) {
+            } catch (\Illuminate\Validation\ValidationException $validationException) {
                 return response()->json([
-                    'message' => 'Le code de validation est incorrect.',
-                ], 400);
+                    'message' => 'Erreur de validation.',
+                    'errors' => $validationException->errors(),
+                ], 422);
+            } catch (\Exception $exception) {
+                return response()->json([
+                    'message' => 'Une erreur est survenue lors de la validation.',
+                    'error' => $exception->getMessage(),
+                ], 500);
             }
-        
-            // Sauvegarder l'utilisateur dans la base de données
-            $user = User::create([
-                'nom_utilisateur' => $donnees_utilisateur['nom_utilisateur'],
-                'prenom_utilisateur' => $donnees_utilisateur['prenom_utilisateur'],
-                'email' => $donnees_utilisateur['email'],
-                'mot_de_passe' => $donnees_utilisateur['mot_de_passe'],
-                'validation_code' => $donnees_utilisateur['validation_code'],
-                'est_verifie' => true
-            ]);
-        
-            // Supprimer les données du cache
-            Cache::forget($cle_cache);
-        
-            return response()->json([
-                'message' => 'Compte créé avec succès.',
-                'user' => $user,
-            ], 201);
-        } catch (\Illuminate\Validation\ValidationException $erreur_de_validation) {
-            return response()->json([
-                'message' => 'Erreur de validation.',
-                'erreurs' => $erreur_de_validation->errors(),
-            ], 422);
-        } catch (\Exception $erreur_generale) {
-            return response()->json([
-                'message' => 'Une erreur est survenue lors de la validation.',
-                'erreur' => $erreur_generale->getMessage(),
-            ], 500);
         }
-    }
+        
 
 }

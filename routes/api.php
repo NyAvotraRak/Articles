@@ -27,13 +27,17 @@ Route::get('test', function () {
 });
 
 //lien qui permettra au client (React de naviguer)
-Route::prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware('auth:sanctum')->name('admin.')->group(function () {
     Route::resource('categorie', CategorieController::class)->except(['show', 'create', 'store']);
     Route::resource('produit', ProduitController::class)->except(['show', 'create']);
+
+    Route::get('/utilisateur', [UserController::class, 'index'])->name('utilisateur.index');
+    Route::put('/update/{user}', [UserController::class, 'update']);
 
 });
 
 Route::post('/register', [UserController::class, 'register']);
-Route::post('/login', [UserController::class, 'login']);
+Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 Route::post('/validation', [UserController::class, 'validateCode']);
+
