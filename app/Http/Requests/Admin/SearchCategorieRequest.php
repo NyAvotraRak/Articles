@@ -22,7 +22,7 @@ class SearchCategorieRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom_categorie' => ['string', 'nullable']
+            'recherche' => ['string', 'nullable']
         ];
     }
 }

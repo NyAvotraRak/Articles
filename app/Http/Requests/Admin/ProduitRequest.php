@@ -25,7 +25,7 @@ class ProduitRequest extends FormRequest
     {
         // dd('tonga');
         return [
-            'image_produit' => ['required', 'image', 'unique:produits,image_produit,' . $this->route('produit')],
+            'image_produit' => [$this->isMethod('patch') || $this->isMethod('put') ? 'nullable' : 'required', 'image', 'unique:produits,image_produit,' . $this->route('produit')],// Nullable pour modification
             'nom_produit' => ['required', 'string', 'min:2', 'unique:produits,nom_produit,' . $this->route('produit')],
             'description_produit' => ['required', 'string', 'unique:produits,description_produit,' . $this->route('produit')],
             'prix' => ['required', 'integer', 'min:0'],

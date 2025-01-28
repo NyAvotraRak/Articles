@@ -18,34 +18,27 @@ class ProduitController extends Controller
      */
     public function index(SearchProduitRequest $request)
     {
-        // dd($request);
         try {
+            // Récupérer le mot saisi
+            $recherche = $request->validated('recherche');
+
             // Récupérer toutes les données de Produit avec Categorie
             $query = Produit::with('categorie')->orderBy('created_at', 'desc');
-            // dd($produits);
 
-            // Appliquer le filtre sur le nom du produit si fourni
-            if ($nom_produit = $request->validated('nom_produit')) {
-                $query = $query->where('nom_produit', 'like', "%{$nom_produit}%");
-            }
-
-            // Appliquer le filtre sur la description du produit si fourni
-            if ($description_produit = $request->validated('description_produit')) {
-                $query = $query->where('description_produit', 'like', "%{$description_produit}%");
-            }
-
-            // Appliquer le filtre sur le prix du produit si fourni
-            if ($prix = $request->validated('prix')) {
-                $query = $query->where('prix', '<=', $prix);
+            // Appliquer les différents filtres
+            if ($recherche) {
+                $query->where(function ($q) use ($recherche) {
+                    $q->where('nom_produit', 'like', "%{$recherche}%")
+                    ->orWhere('description_produit', 'like', "%{$recherche}%")
+                    ->orWhere('prix', '<=', $recherche);
+                });
             }
 
             // Exécuter la requête pour récupérer les résultats
             $produits = $query->get();
-            // dd($produits);
     
             // Vérifier si aucun produit n'est disponible
             if ($produits->isEmpty()) {
-                // dd($produits);
                 return response()->json([
                     'success' => false,
                     'message' => 'Aucun produit disponible.',
@@ -57,9 +50,7 @@ class ProduitController extends Controller
                 'success' => true,
                 'produits' => $produits,
                 'total_produit' => $produits->count(),
-                'input_nom_produit' => $request->input('nom_produit'),
-                'input_description_produit' => $request->input('description_produit'),
-                'input_prix' => $request->input('prix'),
+                'recherche' => $request->validated('recherche'),
             ], 200);
     
         } catch (\Exception $e) {
@@ -74,48 +65,47 @@ class ProduitController extends Controller
     
     /**
      * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        try {
+    //  */
+    // public function create()
+    // {
+    //     try {
             
-            $produit = new Produit();
+    //         $produit = new Produit();
 
-            // Récupérer les catégories avec leurs ID et noms
-            $categories = Categorie::pluck('nom_categorie', 'id');
-            // dd($categories);
+    //         // Récupérer les catégories avec leurs ID et noms
+    //         $categories = Categorie::pluck('nom_categorie', 'id');
+    //         // dd($categories);
     
-            // Vérifier si aucune catégorie n'est disponible
-            if ($categories->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Aucune catégorie disponible.',
-                ], 404);
-            }
+    //         // Vérifier si aucune catégorie n'est disponible
+    //         if ($categories->isEmpty()) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Aucune catégorie disponible.',
+    //             ], 404);
+    //         }
     
-            // Retourner les catégories sous forme de JSON
-            return response()->json([
-                'success' => true,
-                'categories' => $categories,
-                'produit' => $produit,
-            ], 200);
+    //         // Retourner les catégories sous forme de JSON
+    //         return response()->json([
+    //             'success' => true,
+    //             'categories' => $categories,
+    //             'produit' => $produit,
+    //         ], 200);
     
-        } catch (\Exception $e) {
-            // Gérer les erreurs et retourner une réponse JSON
-            return response()->json([
-                'success' => false,
-                'message' => 'Une erreur est survenue lors de la récupération des catégories.',
-                'error' => $e->getMessage(), // Optionnel pour débogage
-            ], 500);
-        }
-    }
+    //     } catch (\Exception $e) {
+    //         // Gérer les erreurs et retourner une réponse JSON
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Une erreur est survenue lors de la récupération des catégories.',
+    //             'error' => $e->getMessage(), // Optionnel pour débogage
+    //         ], 500);
+    //     }
+    // }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(ProduitRequest $request)
     {
-        // dd($request);
         try {
             // Récupérer toutes les catégories sans filtrage et sans tri
             $query = Categorie::query();
@@ -135,7 +125,6 @@ class ProduitController extends Controller
             }
 
             $data = $this->extract_data(new Produit(), $request);
-            // dd($categorie->id);
             // Tenter de créer la catégorie
             $produit = Produit::create([
                 'nom_produit' => $data['nom_produit'],
@@ -144,7 +133,6 @@ class ProduitController extends Controller
                 'prix' => $data['prix'],
                 'categorie_id' => $categorie->id
             ]);
-            // dd($produit);
     
             // Retourner une réponse 201 en cas de succès
             return response()->json([
@@ -167,7 +155,7 @@ class ProduitController extends Controller
         try {
             // Récupérer le produit par son ID
             $produit = Produit::findOrFail($id);
-            // dd($produit);
+
             // Récupérer les catégories avec leurs ID et noms
             $categories = Categorie::pluck('nom_categorie', 'id');
 
@@ -193,17 +181,41 @@ class ProduitController extends Controller
      */
     public function update(ProduitRequest $request, $id)
     {
-        // $data = $request->validated();
-        // dd($data);
         try {
+            // Récupérer toutes les catégories sans filtrage et sans tri
+            $query = Categorie::query();
+
+            // Appliquer le filtre sur le nom du produit si fourni
+            if ($nom_categorie = $request->validated('categorie_nom')) {
+                $query = $query->where('nom_categorie', $nom_categorie);
+            }
+
+            $categorie = $query->first();
+
+            if(!$categorie){
+                // Sauvegarder la categorie dans la base de données
+                $categorie = Categorie::create([
+                    'nom_categorie' => $request->validated('categorie_nom')
+                ]);
+            }
             // Récupérer le produit à mettre à jour
             $produit = Produit::findOrFail($id);
             // dd($produit);
             $data = $this->extract_data($produit, $request);
 
+            // Si l'image_produit n'est pas présente dans la requête, conserver l'ancienne image
+            if (empty($data['image_produit'])) {
+                $data['image_produit'] = $produit->image_produit;
+            }
+
             // Mettre à jour le produit avec les données validées
-            $produit->update($data);
-            // dd($produit);
+            $produit->update([
+                'nom_produit' => $data['nom_produit'],
+                'description_produit' => $data['description_produit'],
+                'image_produit' => $data['image_produit'],
+                'prix' => $data['prix'],
+                'categorie_id' => $categorie->id
+            ]);
 
             // Retourner une réponse en cas de succès
             return response()->json([
@@ -251,7 +263,6 @@ class ProduitController extends Controller
         try {
             // Récupérer le produit à supprimé
             $produit = Produit::findOrFail($id);
-            // dd($produit);
                 
             // Vérifier si une image existe et la supprimer
             if ($produit->image_produit) {
@@ -260,7 +271,6 @@ class ProduitController extends Controller
 
             // Suppression du produit
             $produit->delete();
-            // dd();
     
             // Réponse en cas de succès
             return response()->json([

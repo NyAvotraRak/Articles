@@ -22,9 +22,7 @@ class SearchProduitRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nom_produit' => ['string', 'nullable'],
-            'description_produit' => ['string', 'nullable'],
-            'prix' => ['integer', 'nullable']
+            'recherche' => ['string', 'nullable'],
 
         ];
     }

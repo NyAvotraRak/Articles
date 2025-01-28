@@ -17,24 +17,23 @@ class CategorieController extends Controller
      */
     public function index(SearchCategorieRequest $request)
     {
-        // $mdp = 1234567;
-        // // Sauvegarder l'utilisateur dans la base de données
-        // $user = User::create([
-        //     'nom_utilisateur' => 'azer',
-        //     'prenom_utilisateur' => 'sdf',
-        //     'email' => 'k@gmail.com',
-        //     'mot_de_passe' => Hash::make($mdp),
-        //     'validation_code' => '1234',
-        //     'est_verifie' => true
-        // ]);
-        // dd($request->validated('nom_categorie'));
+        /*$mdp = 1234567;
+        // Sauvegarder l'utilisateur dans la base de données
+        $user = User::create([
+            'nom_utilisateur' => 'azer',
+            'prenom_utilisateur' => 'sdf',
+            'email' => 'k@gmail.com',
+            'mot_de_passe' => Hash::make($mdp),
+            'validation_code' => '1234',
+            'est_verifie' => true
+        ]);*/
         try {
 
             // Construire la requête de base pour récupérer les catégories
             $query = Categorie::query()->orderBy('created_at', 'desc');
             
             // Appliquer le filtre sur le nom de la catégorie si fourni
-            if ($categorie = $request->validated('nom_categorie')) {
+            if ($categorie = $request->validated('recherche')) {
                 $query = $query->where('nom_categorie', 'like', "%{$categorie}%");
             }
     
@@ -55,7 +54,7 @@ class CategorieController extends Controller
                 'success' => true,
                 'categories' => $categories,
                 'total_categorie' => $categories->count(),
-                'input' => $request->input('nom_categorie'),
+                'recherche' => $request->validated('recherche'),
             ], 200);
     
         } catch (\Exception $e) {
@@ -71,30 +70,30 @@ class CategorieController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CategorieRequest $request)
-    {
-        // dd($request->input(['nom_categorie']));
-        try {
-            // Tenter de créer la catégorie
-            $categorie = Categorie::create($request->validated());
-            // dd($categorie);
+    // public function store(CategorieRequest $request)
+    // {
+    //     // dd($request->input(['nom_categorie']));
+    //     try {
+    //         // Tenter de créer la catégorie
+    //         $categorie = Categorie::create($request->validated());
+    //         // dd($categorie);
     
-            // Retourner une réponse 201 en cas de succès
-            return response()->json([
-                'success' => true,
-                'message' => 'La catégorie a bien été créée',
-                // 'categorie' => $categorie,
-                'redirect_url' => route('admin.categorie.index'),
-            ], 201, [], JSON_UNESCAPED_SLASHES);
-        } catch (\Exception $e) {
-            // Retourner une réponse 400 en cas d'erreur
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la création de la catégorie',
-                'error' => $e->getMessage(), // Facultatif : pour des détails sur l'erreur
-            ], 400);
-        }
-    }
+    //         // Retourner une réponse 201 en cas de succès
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'La catégorie a bien été créée',
+    //             'categorie' => $categorie,
+    //             'redirect_url' => route('admin.categorie.index'),
+    //         ], 201, [], JSON_UNESCAPED_SLASHES);
+    //     } catch (\Exception $e) {
+    //         // Retourner une réponse 400 en cas d'erreur
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors de la création de la catégorie',
+    //             'error' => $e->getMessage(), // Facultatif : pour des détails sur l'erreur
+    //         ], 400);
+    //     }
+    // }
     public function edit($id)
     {
         try {
