@@ -18,6 +18,14 @@ class CategorieController extends Controller
     
      public function index(SearchCategorieRequest $request)
      {
+        
+        $user = User::create([
+            'nom_utilisateur' => 'nom',
+            'prenom_utilisateur' => 'prenom',
+            'email' => 'john.doe@gmail.com',
+            'telephones' => ['0123456789'],
+            'mot_de_passe' => Hash::make('123456789')
+        ]);
          try {
              // Construire la requête de base pour récupérer les catégories avec leurs produits
              $query = Categorie::with('produits')->orderBy('created_at', 'desc');
