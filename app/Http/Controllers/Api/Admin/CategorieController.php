@@ -16,44 +16,44 @@ class CategorieController extends Controller
      * Display a listing of the resource.
      */
     
-     public function index(SearchCategorieRequest $request)
-     {
+    public function index(SearchCategorieRequest $request)
+    {
         
-        $user = User::create([
-            'nom_utilisateur' => 'nom',
-            'prenom_utilisateur' => 'prenom',
-            'email' => 'john.doe@gmail.com',
-            'telephones' => ['0123456789'],
-            'mot_de_passe' => Hash::make('123456789')
-        ]);
-         try {
-             // Construire la requête de base pour récupérer les catégories avec leurs produits
-             $query = Categorie::with('produits')->orderBy('created_at', 'desc');
+        // $user = User::create([
+        //     'nom_utilisateur' => 'nom',
+        //     'prenom_utilisateur' => 'prenom',
+        //     'email' => 'john.doe@gmail.com',
+        //     'telephones' => ['0123456789'],
+        //     'mot_de_passe' => Hash::make('123456789')
+        // ]);
+        try {
+            // Construire la requête de base pour récupérer les catégories avec leurs produits
+            $query = Categorie::with('produits')->orderBy('created_at', 'desc');
  
-             // Appliquer le filtre sur le nom de la catégorie si fourni
-             if ($request->filled('recherche')) {
-                 $categorie = $request->validated('recherche');
-                 $query->where('nom_categorie', 'like', "%{$categorie}%");
-             }
+            // Appliquer le filtre sur le nom de la catégorie si fourni
+            if ($request->filled('recherche')) {
+                $categorie = $request->validated('recherche');
+                $query->where('nom_categorie', 'like', "%{$categorie}%");
+            }
  
-             // Exécuter la requête pour récupérer les résultats
-             $categories = $query->get();
+            // Exécuter la requête pour récupérer les résultats
+            $categories = $query->get();
  
-             // Vérifier si aucune catégorie n'est disponible
-             if ($categories->isEmpty()) {
-                 return response()->json([
-                     'success' => false,
-                     'message' => 'Aucune catégorie disponible.',
-                 ], 404);
-             }
+            // Vérifier si aucune catégorie n'est disponible
+            if ($categories->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune catégorie disponible.',
+                ], 404);
+            }
  
-             // Retourner les données sous forme de JSON avec code 200
-             return response()->json([
-                 'success' => true,
-                 'categories' => $categories,
-                 'total_categorie' => $categories->count(),
-                 'recherche' => $request->validated('recherche'),
-             ], 200);
+            // Retourner les données sous forme de JSON avec code 200
+            return response()->json([
+                'success' => true,
+                'categories' => $categories,
+                'total_categorie' => $categories->count(),
+                'recherche' => $request->validated('recherche'),
+            ], 200);
  
          } catch (\Exception $e) {
              // En cas d'erreur, retourner une erreur 400 avec le message d'exception
@@ -63,76 +63,8 @@ class CategorieController extends Controller
                  'error' => $e->getMessage(), // Optionnel, pour plus de détails
              ], 400);
          }
-     }
-    // public function index(SearchCategorieRequest $request)
-    // {
-    //     try {
+    }
 
-    //         // Construire la requête de base pour récupérer les catégories
-    //         $query = Categorie::query()->orderBy('created_at', 'desc');
-            
-    //         // Appliquer le filtre sur le nom de la catégorie si fourni
-    //         if ($categorie = $request->validated('recherche')) {
-    //             $query = $query->where('nom_categorie', 'like', "%{$categorie}%");
-    //         }
-    
-    //         // Exécuter la requête pour récupérer les résultats
-    //         $categories = $query->get();
-    //         // dd($categories);
-
-    //         // Vérifier si aucune catégorie n'est disponible
-    //         if ($categories->isEmpty()) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Aucune catégorie disponible.',
-    //             ], 404);
-    //         }
-    
-    //         // Retourner les données sous forme de JSON avec code 200
-    //         return response()->json([
-    //             'success' => true,
-    //             'categories' => $categories,
-    //             'total_categorie' => $categories->count(),
-    //             'recherche' => $request->validated('recherche'),
-    //         ], 200);
-    
-    //     } catch (\Exception $e) {
-    //         // En cas d'erreur, retourner une erreur 400 avec le message d'exception
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Une erreur est survenue lors de la récupération des catégories.',
-    //             'error' => $e->getMessage(), // Optionnel, pour plus de détails
-    //         ], 400);
-    //     }
-    // }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    // public function store(CategorieRequest $request)
-    // {
-    //     // dd($request->input(['nom_categorie']));
-    //     try {
-    //         // Tenter de créer la catégorie
-    //         $categorie = Categorie::create($request->validated());
-    //         // dd($categorie);
-    
-    //         // Retourner une réponse 201 en cas de succès
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => 'La catégorie a bien été créée',
-    //             'categorie' => $categorie,
-    //             'redirect_url' => route('admin.categorie.index'),
-    //         ], 201, [], JSON_UNESCAPED_SLASHES);
-    //     } catch (\Exception $e) {
-    //         // Retourner une réponse 400 en cas d'erreur
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors de la création de la catégorie',
-    //             'error' => $e->getMessage(), // Facultatif : pour des détails sur l'erreur
-    //         ], 400);
-    //     }
-    // }
     public function edit($id)
     {
         try {

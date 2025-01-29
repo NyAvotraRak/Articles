@@ -178,13 +178,8 @@ class UserController extends Controller
     public function login(LoginUserRequest $request)
     {
         try {
-            // dd($request);
             // Recherche de l'utilisateur
             $user = User::where('email', $request->validated('email'))->first();
-
-            // dd(Hash::check($request->validated('mot_de_passe')));
-    
-            // dd($user);
 
             // Vérification des identifiants
             if (! $user || ! Hash::check($request->validated('mot_de_passe'), $user->mot_de_passe)) {

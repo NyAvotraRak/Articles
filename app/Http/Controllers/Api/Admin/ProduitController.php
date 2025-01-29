@@ -126,6 +126,7 @@ class ProduitController extends Controller
 
             $data = $this->extract_data(new Produit(), $request);
             // Tenter de créer la catégorie
+            // dd($data);
             $produit = Produit::create([
                 'nom_produit' => $data['nom_produit'],
                 'description_produit' => $data['description_produit'],
@@ -245,6 +246,7 @@ class ProduitController extends Controller
         $data = $request->validated();
         /** @var Uploadedfile|null $image_produit */
         $image_produit = $request->validated('image_produit');
+        // dd($image_produit);
         if ($image_produit == null || $image_produit->getError()) {
             return $data;
         }
