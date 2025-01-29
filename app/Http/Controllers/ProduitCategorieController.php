@@ -10,42 +10,36 @@ use Illuminate\Http\Request;
 
 class ProduitCategorieController extends Controller
 {
-    public function indexCategorie(SearchCategorieRequest $id)
+    public function indexCategorie(SearchCategorieRequest $request)
     {
-        
         try {
-            // Initialiser la requête en incluant les produits liés à chaque catégorie
-            // et en triant par ordre décroissant de date de création
-            $query = Categorie::with('produits')->orderBy('created_at', 'desc');
-        
-            // Vérifier si une catégorie spécifique est demandée via un ID dans la requête
-            if ($id->filled('id')) {
-                // Chercher la catégorie correspondant à l'ID fourni
-                $categorie = Categorie::with('produits')->find($id->id);
-        
-                // Vérifier si la catégorie existe
-                if (!$categorie) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Aucune catégorie disponible.',
-                    ], 404);
-                }
-        
-                // Retourner la catégorie trouvée avec ses produits au format JSON
-                return response()->json([
-                    'success' => true,
-                    'categorie' => $categorie,
-                    'id' => $id->validated('id'),
-                ], 200);
+
+            // Construire la requête de base pour récupérer les catégories
+            $query = Categorie::query()->orderBy('created_at', 'desc');
+            
+            // Appliquer le filtre sur le nom de la catégorie si fourni
+            if ($categorie = $request->validated('recherche')) {
+                $query = $query->where('nom_categorie', 'like', "%{$categorie}%");
             }
-            // Si aucun ID n'est fourni, récupérer toutes les catégories avec leurs produits
+    
+            // Exécuter la requête pour récupérer les résultats
             $categories = $query->get();
+            // dd($categories);
+
+            // Vérifier si aucune catégorie n'est disponible
+            if ($categories->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune catégorie disponible.',
+                ], 404);
+            }
     
             // Retourner les données sous forme de JSON avec code 200
             return response()->json([
                 'success' => true,
                 'categories' => $categories,
-                'total_categorie' => $categories->count()
+                'total_categorie' => $categories->count(),
+                'recherche' => $request->validated('recherche'),
             ], 200);
     
         } catch (\Exception $e) {
@@ -57,6 +51,7 @@ class ProduitCategorieController extends Controller
             ], 400);
         }
     }
+
     public function showCategorie($id)
     {
         try {
@@ -133,6 +128,7 @@ class ProduitCategorieController extends Controller
             ], 400);
         }
     }
+
     public function showProduit($id)
     {
         try {
