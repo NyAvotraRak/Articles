@@ -57,7 +57,36 @@ class ProduitCategorieController extends Controller
             ], 400);
         }
     }
-
+    public function showCategorie($id)
+    {
+        try {
+            // Rechercher la catégorie demandée avec ses produits
+            $categorie = Categorie::with('produits')->find($id);
+    
+            // Vérifier si la catégorie existe
+            if (!$categorie) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune catégorie trouvée pour cet identifiant.',
+                ], 404);
+            }
+    
+            // Retourner la catégorie trouvée avec ses produits
+            return response()->json([
+                'success' => true,
+                'categorie' => $categorie,
+            ], 200);
+    
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner une réponse d'erreur avec le message d'exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la récupération de la catégorie.',
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+    }
+    
     public function indexProduit(SearchProduitRequest $request)
     {
         try {
@@ -104,4 +133,34 @@ class ProduitCategorieController extends Controller
             ], 400);
         }
     }
+    public function showProduit($id)
+    {
+        try {
+            // Rechercher le produit demandé avec sa catégorie associée
+            $produit = Produit::with('categorie')->find($id);
+
+            // Vérifier si le produit existe
+            if (!$produit) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucun produit trouvé pour cet identifiant.',
+                ], 404);
+            }
+
+            // Retourner le produit trouvé avec sa catégorie
+            return response()->json([
+                'success' => true,
+                'produit' => $produit,
+            ], 200);
+
+        } catch (\Exception $e) {
+            // En cas d'erreur, retourner une réponse d'erreur avec le message d'exception
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la récupération du produit.',
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
 }

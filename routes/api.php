@@ -39,6 +39,8 @@ Route::prefix('admin')->middleware('auth:sanctum')->name('admin.')->group(functi
 
 Route::get('/categorie', [ProduitCategorieController::class, 'indexCategorie'])->name('indexCategorie');
 Route::get('/produit', [ProduitCategorieController::class, 'indexProduit'])->name('indexProduit');
+Route::get('/categorie/{id}', [ProduitCategorieController::class, 'showCategorie'])->name('showCategorie');
+Route::get('/produit/{id}', [ProduitCategorieController::class, 'showProduit'])->name('showProduit');
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
