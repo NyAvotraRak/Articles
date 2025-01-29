@@ -28,6 +28,8 @@ class UpdateUserRequest extends FormRequest
             'prenom_utilisateur' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $this->route('user'), // Permet de valider tout en excluant l'utilisateur actuel
             'mot_de_passe' => 'nullable|string|min:8', // Le mot de passe est optionnel pour les mises à jour
+            'telephones' => 'nullable|array', // Le champ telephones doit être un tableau si présent
+            'telephones.*' => 'nullable|string|regex:/^\d{10}$/', // Validation pour 10 chiffres
         ];
     }
     
@@ -65,6 +67,11 @@ class UpdateUserRequest extends FormRequest
             'mot_de_passe.string' => 'Le mot de passe doit être une chaîne de caractères.',
             'mot_de_passe.min' => 'Le mot de passe doit comporter au moins 8 caractères.',
             'mot_de_passe.confirmed' => 'La confirmation du mot de passe ne correspond pas.',
+
+            'telephones.array' => 'Le champ "Téléphones" doit être un tableau.',
+            'telephones.*.string' => 'Chaque numéro de téléphone doit être une chaîne de caractères.',
+            'telephones.*.size' => 'Chaque numéro de téléphone doit contenir exactement 10 caractères.',
+            'telephones.*.regex' => 'Chaque numéro de téléphone doit contenir exactement 10 chiffres.',
         ];
     }
 }

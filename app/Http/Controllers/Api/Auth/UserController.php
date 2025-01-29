@@ -93,6 +93,7 @@ class UserController extends Controller
     
     public function update(UpdateUserRequest $request, $id)
     {
+        // dd($request);
         try {
             // Récupérer l'utilisateur à mettre à jour
             $user = User::findOrFail($id);
@@ -105,22 +106,38 @@ class UserController extends Controller
     
             // Si le mot de passe est fourni, le hacher
             if (!empty($data['mot_de_passe'])) {
-                $data['mot_de_passe'] = Hash::make($data['mot_de_passe']);
+                $data['mot_de_passe'] = $data['mot_de_passe'];
             } else {
                 // Supprimer la clé 'mot_de_passe' pour éviter une mise à jour à null
                 unset($data['mot_de_passe']);
+            }
+            // dd($data['mot_de_passe']);
+            
+            // Si 'telephones' existe dans les données, on l'ajoute
+            if (isset($data['telephones'])) {
+                $user->telephones = $data['telephones'];
             }
     
             // Stocker les données dans le cache avant de les valider
             $cle_cache = 'modification_utilisateur_' . $data['email'];
             // dd($cle_cache);
+            /*dd([
+                
+                'id' => $user->id,
+                'nom_utilisateur' => $data['nom_utilisateur'],
+                'prenom_utilisateur' => $data['prenom_utilisateur'],
+                'email' => $data['email'],
+                'telephones' => isset($data['telephones']) ? $data['telephones'] : $user->telephones, // Si 'telephones' est absent, on garde l'ancien
+                'mot_de_passe' => isset($data['mot_de_passe']) ? Hash::make($data['mot_de_passe']) : $user->mot_de_passe,
+            ]);*/
             Cache::put($cle_cache, [
                 'id' => $user->id,
                 'nom_utilisateur' => $data['nom_utilisateur'],
                 'prenom_utilisateur' => $data['prenom_utilisateur'],
                 'email' => $data['email'],
-                'mot_de_passe' => isset($data['mot_de_passe']) ? Hash::make($data['mot_de_passe']) : $user->mot_de_passe,
                 'validation_code' => $code_validation,
+                'telephones' => isset($data['telephones']) ? $data['telephones'] : $user->telephones, // Si 'telephones' est absent, on garde l'ancien
+                'mot_de_passe' => isset($data['mot_de_passe']) ? $data['mot_de_passe'] : $user->mot_de_passe,
             ], now()->addMinutes(10)); // Expire après 10 minutes
             
             // Envoyer l'email avec le code de validation
@@ -128,6 +145,7 @@ class UserController extends Controller
 
             // Retourner une réponse JSON pour informer l'utilisateur de vérifier son email
             return response()->json([
+                'hash' => $data['mot_de_passe'],
                 'message' => 'Un email de validation a été envoyé. Veuillez vérifier votre boîte de réception.',
             ], 200);
 
@@ -160,9 +178,14 @@ class UserController extends Controller
     public function login(LoginUserRequest $request)
     {
         try {
+            // dd($request);
             // Recherche de l'utilisateur
             $user = User::where('email', $request->validated('email'))->first();
+
+            // dd(Hash::check($request->validated('mot_de_passe')));
     
+            // dd($user);
+
             // Vérification des identifiants
             if (! $user || ! Hash::check($request->validated('mot_de_passe'), $user->mot_de_passe)) {
                 throw ValidationException::withMessages([
@@ -236,10 +259,11 @@ class UserController extends Controller
                         'user' => $user,
                     ], 201);
                 }
-        
+                
                 // Vérification pour modification
                 $cle_cache_modification = 'modification_utilisateur_' . $request->email;
                 $donnees_modification = Cache::get($cle_cache_modification);
+                // dd($donnees_modification['mot_de_passe']);
         
                 if ($donnees_modification && $donnees_modification['validation_code'] === $request->validation_code) {
                     // Mise à jour de l'utilisateur existant
@@ -249,10 +273,11 @@ class UserController extends Controller
                         'nom_utilisateur' => $donnees_modification['nom_utilisateur'],
                         'prenom_utilisateur' => $donnees_modification['prenom_utilisateur'],
                         'email' => $donnees_modification['email'],
-                        'mot_de_passe' => $donnees_modification['mot_de_passe'],
-                        'est_verifie' => true,
+                        'mot_de_passe' => Hash::make($donnees_modification['mot_de_passe']),
+                        'telephones' => $donnees_modification['telephones'],
                     ]);
-        
+                    
+                    // dd($user);
                     // Supprimer le cache
                     Cache::forget($cle_cache_modification);
         

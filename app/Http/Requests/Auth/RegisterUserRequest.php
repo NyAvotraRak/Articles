@@ -29,7 +29,7 @@ class RegisterUserRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->route('register')],
             'mot_de_passe' => ['required', 'string', 'min:8'],
             'telephones' => ['required', 'array'], // Champ de type tableau
-            'telephones.*' => ['nullable', 'string', 'size:10'], // Chaque téléphone doit avoir exactement 10 caractères
+            'telephones.*' => ['nullable', 'string', 'size:10', 'regex:/^\d{10}$/'], // Chaque téléphone doit avoir exactement 10 caractères
         ];
     }
     
@@ -56,6 +56,7 @@ class RegisterUserRequest extends FormRequest
             'telephones.required' => 'Le champ des numéros de téléphone doit être obligatoire.',
             'telephones.*.string' => 'Chaque numéro de téléphone doit être une chaîne de caractères.',
             'telephones.*.size' => 'Chaque numéro de téléphone doit contenir exactement 10 caractères.',
+            'telephones.*.regex' => 'Chaque numéro de téléphone doit contenir exactement 10 chiffres.',
         ];
     }
 }
