@@ -16,9 +16,8 @@ return new class extends Migration
             $table->string('nom_utilisateur');
             $table->string('prenom_utilisateur');
             $table->string('email')->unique();
+            $table->json('telephones')->nullable();
             $table->string('mot_de_passe');
-            $table->string('validation_code')->nullable();
-            $table->boolean('est_verifie')->default(false);
             $table->timestamps();
         });
     }

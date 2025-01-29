@@ -46,6 +46,7 @@ class UserController extends Controller
 
     public function register(RegisterUserRequest $request)
     {
+        // dd($request);
         try {
 
             // Vérifier si un compte existe déjà dans la base de données
@@ -64,13 +65,14 @@ class UserController extends Controller
 
             // Stocker les données utilisateur dans le cache
             $cle_cache = 'inscription_utilisateur_' . $request->email;
-            // dd($cle_cache);
+
             Cache::put($cle_cache, [
                 'nom_utilisateur' => $request->validated('nom_utilisateur'),
                 'prenom_utilisateur' => $request->validated('prenom_utilisateur'),
                 'email' => $request->validated('email'),
                 'mot_de_passe' => Hash::make($request->validated('mot_de_passe')),
                 'validation_code' => $code_validation,
+                'telephones' => $request->validated('telephones'), // Enregistrer les téléphones dans le cache
             ], now()->addMinutes(10)); // Expire après 10 minutes
 
             // Envoyer l'email avec le code de validation
@@ -223,7 +225,7 @@ class UserController extends Controller
                         'prenom_utilisateur' => $donnees_inscription['prenom_utilisateur'],
                         'email' => $donnees_inscription['email'],
                         'mot_de_passe' => $donnees_inscription['mot_de_passe'],
-                        'est_verifie' => true,
+                        'telephones' => $donnees_inscription['telephones'], // Enregistrer les téléphones
                     ]);
         
                     // Supprimer le cache

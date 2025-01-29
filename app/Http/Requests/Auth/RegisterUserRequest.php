@@ -28,6 +28,8 @@ class RegisterUserRequest extends FormRequest
             'prenom_utilisateur' => ['required', 'string', 'min:2', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->route('register')],
             'mot_de_passe' => ['required', 'string', 'min:8'],
+            'telephones' => ['required', 'array'], // Champ de type tableau
+            'telephones.*' => ['nullable', 'string', 'size:10'], // Chaque téléphone doit avoir exactement 10 caractères
         ];
     }
     
@@ -50,6 +52,10 @@ class RegisterUserRequest extends FormRequest
             'email.required' => 'Un email doit être fourni.',
             'email.unique' => 'Cette adresse mail existe déja.',
             'mot_de_passe.required' => 'Le mot de passe est requis.',
+            'telephones.array' => 'Le champ des numéros de téléphone doit être un tableau.',
+            'telephones.required' => 'Le champ des numéros de téléphone doit être obligatoire.',
+            'telephones.*.string' => 'Chaque numéro de téléphone doit être une chaîne de caractères.',
+            'telephones.*.size' => 'Chaque numéro de téléphone doit contenir exactement 10 caractères.',
         ];
     }
 }

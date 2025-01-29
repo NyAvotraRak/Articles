@@ -22,8 +22,7 @@ class User extends Authenticatable
         'prenom_utilisateur',
         'email',
         'mot_de_passe',
-        'validation_code',
-        'est_verifie'
+        'telephones' // Ajout du champ telephones
     ];
 
     /**
@@ -43,5 +42,6 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'telephones' => 'array', // Assurez-vous que 'telephones' est casté en tableau
     ];
 }

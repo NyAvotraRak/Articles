@@ -28,7 +28,7 @@ Route::get('test', function () {
 });
 
 //lien qui permettra au client (React de naviguer)
-Route::prefix('admin')->middleware('auth:sanctum')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->group(function () {
     Route::resource('categorie', CategorieController::class)->except(['show', 'create', 'store']);
     Route::resource('produit', ProduitController::class)->except(['show', 'create']);
 
