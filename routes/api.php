@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\UserController;
 use App\Http\Controllers\Api\Admin\CategorieController;
 use App\Http\Controllers\Api\Admin\ProduitController;
+use App\Http\Controllers\ProduitCategorieController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -35,6 +36,9 @@ Route::prefix('admin')->middleware('auth:sanctum')->name('admin.')->group(functi
     Route::put('/update/{user}', [UserController::class, 'update']);
 
 });
+
+Route::get('/categorie', [ProduitCategorieController::class, 'indexCategorie'])->name('indexCategorie');
+Route::get('/produit', [ProduitCategorieController::class, 'indexProduit'])->name('indexProduit');
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');

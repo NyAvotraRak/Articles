@@ -13,7 +13,7 @@ class Categorie extends Model
         'nom_categorie'
     ];
     
-    public function produit()
+    public function produits()
     {
         return $this->hasMany(Produit::class);
     }
