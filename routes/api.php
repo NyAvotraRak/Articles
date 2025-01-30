@@ -46,4 +46,5 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->post('/logout', [UserController::class, 'logout']);
 Route::post('/validation', [UserController::class, 'validateCode']);
+Route::get('/users', [UserController::class, 'index']);
 

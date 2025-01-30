@@ -182,6 +182,7 @@ class ProduitController extends Controller
      */
     public function update(ProduitRequest $request, $id)
     {
+        // dd($id, $request);
         try {
             // Récupérer toutes les catégories sans filtrage et sans tri
             $query = Categorie::query();

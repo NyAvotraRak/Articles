@@ -23,8 +23,6 @@ class ProduitRequest extends FormRequest
      */
     public function rules(): array
     {
-        // Affiche toutes les données reçues dans la requête
-        // dd($this->all());
         return [
             'image_produit' => [$this->isMethod('patch') || $this->isMethod('put') ? 'nullable' : 'required', 'image', 'unique:produits,image_produit,' . $this->route('produit')],// Nullable pour modification
             'nom_produit' => ['required', 'string', 'min:2', 'unique:produits,nom_produit,' . $this->route('produit')],

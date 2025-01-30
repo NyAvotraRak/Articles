@@ -24,7 +24,7 @@ class UserController extends Controller
         try {
 
             // Construire la requête de base pour récupérer les utilisateurs
-            $users = User::select('id', 'nom_utilisateur', 'prenom_utilisateur', 'email')
+            $users = User::select('id', 'nom_utilisateur', 'prenom_utilisateur', 'email', 'telephones')
                             ->get();
 
             // Retourner les données sous forme de JSON avec code 200
