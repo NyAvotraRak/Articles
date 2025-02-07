@@ -30,7 +30,7 @@ class ContactUserMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            from: 'admin@gmail.com',
+            from: 'ny.avotra.rak@gmail.com',
             subject: 'Code de validation'
         );
     }
