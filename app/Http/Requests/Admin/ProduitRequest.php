@@ -25,8 +25,9 @@ class ProduitRequest extends FormRequest
     {
         return [
             'image_produit' => [$this->isMethod('patch') || $this->isMethod('put') ? 'nullable' : 'required', 'image', 'unique:produits,image_produit,' . $this->route('produit')],// Nullable pour modification
-            'nom_produit' => ['required', 'string', 'min:2', 'unique:produits,nom_produit,' . $this->route('produit')],
-            'description_produit' => ['required', 'string', 'unique:produits,description_produit,' . $this->route('produit')],
+            'nom_produit' => ['required', 'string', 'min:2'],
+            'description_produit' => ['required', 'string', 'min:2'],
+            'reference' => ['required', 'string', 'unique:produits,reference,' . $this->route('produit')],
             'prix' => ['required', 'integer', 'min:0'],
             'categorie_nom' => ['required', 'string' ],
         ];
@@ -50,6 +51,8 @@ class ProduitRequest extends FormRequest
             'image_produit.image' => 'ça doit être une image',
             'nom_produit.required' => 'Le nom du produit est obligatoire.',
             'nom_produit.unique' => 'Ce nom produit existe déjà.',
+            'reference.required' => 'La référence du produit est obligatoire.',
+            'reference.unique' => 'Cette reference produit existe déjà.',
             'description_produit.unique' => 'Cette description produit existe déjà.',
             'description_produit.required' => 'La description est obligatoire.',
             'prix.required' => 'Le prix est obligatoire.',

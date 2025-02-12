@@ -30,6 +30,7 @@ class ProduitController extends Controller
                 $query->where(function ($q) use ($recherche) {
                     $q->where('nom_produit', 'like', "%{$recherche}%")
                     ->orWhere('description_produit', 'like', "%{$recherche}%")
+                    ->orWhere('reference', 'like', "%{$recherche}%")
                     ->orWhere('prix', '<=', $recherche);
                 });
             }
@@ -129,6 +130,7 @@ class ProduitController extends Controller
             // dd($data);
             $produit = Produit::create([
                 'nom_produit' => $data['nom_produit'],
+                'reference' => $data['reference'],
                 'description_produit' => $data['description_produit'],
                 'image_produit' => $data['image_produit'],
                 'prix' => $data['prix'],
@@ -213,6 +215,7 @@ class ProduitController extends Controller
             // Mettre à jour le produit avec les données validées
             $produit->update([
                 'nom_produit' => $data['nom_produit'],
+                'reference' => $data['reference'],
                 'description_produit' => $data['description_produit'],
                 'image_produit' => $data['image_produit'],
                 'prix' => $data['prix'],

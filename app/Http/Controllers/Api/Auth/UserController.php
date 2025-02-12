@@ -73,7 +73,7 @@ class UserController extends Controller
                 'mot_de_passe' => Hash::make($request->validated('mot_de_passe')),
                 'validation_code' => $code_validation,
                 'telephones' => $request->validated('telephones'), // Enregistrer les téléphones dans le cache
-            ], now()->addMinutes(10)); // Expire après 10 minutes
+            ], now()->addMinutes(20)); // Expire après 10 minutes
 
             // Envoyer l'email avec le code de validation
             Mail::to($request->validated('email'))->send(new ContactUserMail($code_validation));
