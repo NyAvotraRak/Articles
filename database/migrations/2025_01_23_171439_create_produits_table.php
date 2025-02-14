@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('image_produit');
             $table->string('reference');
             $table->string('nom_produit');
-            $table->longText('description_produit');
+            $table->longText('description_produit')->nullable();
             $table->integer('prix');
             $table->foreignId('categorie_id')->constrained('categories')->onDelete('cascade');
             $table->timestamps();

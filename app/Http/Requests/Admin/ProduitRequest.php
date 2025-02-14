@@ -26,7 +26,7 @@ class ProduitRequest extends FormRequest
         return [
             'image_produit' => [$this->isMethod('patch') || $this->isMethod('put') ? 'nullable' : 'required', 'image', 'unique:produits,image_produit,' . $this->route('produit')],// Nullable pour modification
             'nom_produit' => ['required', 'string', 'min:2'],
-            'description_produit' => ['required', 'string', 'min:2'],
+            'description_produit' => ['nullable', 'string', 'min:2'],
             'reference' => ['required', 'string', 'unique:produits,reference,' . $this->route('produit')],
             'prix' => ['required', 'integer', 'min:0'],
             'categorie_nom' => ['required', 'string' ],
