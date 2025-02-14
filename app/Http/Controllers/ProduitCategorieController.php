@@ -137,6 +137,7 @@ class ProduitCategorieController extends Controller
                 $query->where(function ($q) use ($recherche) {
                     $q->where('nom_produit', 'like', "%{$recherche}%")
                     ->orWhere('description_produit', 'like', "%{$recherche}%")
+                    ->orWhere('reference', 'like', "%{$recherche}%")
                     ->orWhere('prix', '<=', $recherche);
                 });
             }
